@@ -1,8 +1,8 @@
 const WebSocket = require("ws");
 require("dotenv").config();
 
-const HOST_WEBSOCKET = process.env.HOST;
-const PORT_WEBSOCKET = process.env.PORT | 8080;
+const HOST_WEBSOCKET = process.env.HOST || '0.0.0.0';
+const PORT_WEBSOCKET = process.env.PORT || 8080;
 
 const wss = new WebSocket.Server({ host: HOST_WEBSOCKET, port: PORT_WEBSOCKET });
 
