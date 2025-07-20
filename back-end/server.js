@@ -12,30 +12,46 @@ const clients_connected = new Set();
 
 wss.on("connection", (ws) => {
     console.log("Client connected!");
-    clients_connected.add(ws);
-    updateClients();
 
     ws.on("message", (event) => {
         const data = JSON.parse(event);
+
+        if (data.type == 'login') {
+            clients_connected.add({ name: data.name, ws: ws });
+            updateClients();
+        }
+
         wss.clients.forEach((client) => {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify(data));
             }
         });
+
     });
 
     ws.on('close', () => {
-        clients_connected.delete(ws);
-        updateClients();
+        clients_connected.forEach((client) => {
+            if (client.ws === ws) clients_connected.delete(client);
+            updateClients();
+        });
     });
 
 });
 
 const updateClients = () => {
-    const data = JSON.stringify({ type: 'counter', clients: clients_connected.size - 1 });
-    for (_client of clients_connected) {
-        if (_client.readyState === WebSocket.OPEN) {
-            _client.send(data);
+
+    let clients_name = [];
+
+    clients_connected.forEach((client) => {
+        clients_name.push(client.name);
+    });
+
+    const data = JSON.stringify({ type: 'counter', clients_name: clients_name, client_counter: clients_connected.size - 1 });
+
+    clients_connected.forEach((client) => {
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(data);
         }
-    }
+    });
+
 }
